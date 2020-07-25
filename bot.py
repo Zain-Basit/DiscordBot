@@ -102,27 +102,34 @@ async def deckcode(ctx, code: str):
 
     region1_cards = ""
     region2_cards = ""
+    region1_costs = ""
+    region2_costs = ""
 
     for card in deck:
         
         card_code = card.cardCode
         if card.cardCode[2:4] in region_1: 
-            region1_cards += "**" + region1_dict[card_code] + "** " + card.name + " **Cost: " + str(card.cost) + "**\n"           
+            region1_cards += "**" + region1_dict[card_code] + "** " + card.name + "\n" #+ " **Cost: " + str(card.cost) + "**\n"           
+            region1_costs += "**Cost: " + str(card.cost) + "**\n"
 
         elif card.cardCode[2:4] in region_2: 
-            region2_cards += "**" + region2_dict[card_code] + "** " + card.name + " **Cost: " + str(card.cost) + "**\n"
+            region2_cards += "**" + region2_dict[card_code] + "** " + card.name + "\n" #" **Cost: " + str(card.cost) + "**\n"
+            region2_costs += "**Cost: " + str(card.cost) + "**\n"
 
     champs = (Deck.decode(code)).champions()
     champions = ""
     for champ in champs:
-        champions += "/" + champ
+        champions += champ + "/"
     
     if champions == "":
         champions = "There are no champions in the deck"
 
     embed_deck.add_field(name='Champions', value=champions, inline=False)
     embed_deck.add_field(name=f'{what_region(region_1[0])} Cards:', value=region1_cards, inline=True)
+    embed_deck.add_field(name='Cost:', value=region1_costs, inline=True)
+    embed_deck.add_field(name='- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', value='\u200b', inline=False)
     embed_deck.add_field(name=f'{what_region(region_2[0])} Cards:', value=region2_cards, inline=True)
+    embed_deck.add_field(name='Cost:', value=region2_costs, inline=True)
 
     await ctx.send(embed=embed_deck)
 
@@ -139,7 +146,9 @@ def convert_dict(list_to_convert: list) -> dict:
 
     return new_dict
 
-
+"""
+Takes in a region code and returns the full string version
+"""
 def what_region(region_code: str) -> str:
 
     region_dictionary = {
