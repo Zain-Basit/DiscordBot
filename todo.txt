@@ -1,0 +1,17 @@
+1. When listing the cards in the EMBED, list them by card cost, not the default # of card
+
+2. Clean up the keyword functions, in their current state they are a bit prone to errors 
+
+3. MAKE AN ERROR MESSAGE WHEN SOMETHING GOES WRONG
+
+4. Optimize and clean up the deckcode method
+    Use helpers for some of the dirty code
+    
+5. Add more TF quotes
+
+6. Clean up the help menu for the bot. 
+    Break stuff into categories
+    Give command usage instructions
+    Remove pointless commands
+
+7. 

@@ -16,6 +16,33 @@ TOKEN = os.getenv('DISCORD_TOKEN') # DISCORD_TOKEN is an env variable being pull
 bot = commands.Bot(command_prefix='-')
 # client = discord.Client()
 
+keyword_dict = {'Attune': 'When this unit is *summoned*, refill 1 spell mana',
+                    'Barrier': 'Units with this keyword have a barrier on the turn they are summoned. It will negate the next instance of damage', 
+                    'Challenger': 'Challenger units can force any enemy unit to block them when attacking. Enemies cannot change what unit is being challenged without using spells.',
+                    'Deep': 'When you have 15 or less cards in your deck, you become Deep for the rest of the game. Deep units will get +3|+3 to their stats once you are deep.',
+                    'Double Attack': 'Double Attack units strike twice while attacking, once before their blocker, and once at the same time as the blocker.',
+                    'Elusive': 'Can only be blocked by an *Elusive* unit, regular units cannot block cards with this keyword.',
+                    'Enlightened': 'Once a player reaches turn 10, they are enlightened',
+                    'Ephemeral': 'Units with this keyword die at the end of the round, or when they strike.',
+                    'Fearsome': 'Units with this keyword can only be blocked by enemies with 3 or more power.',
+                    'Immobile': 'This unit can\'t attack or block.',
+                    'Last Breath': 'This effect happens when the unit dies',
+                    'Lifesteal': 'Damage this unit deals heals the player\'s Nexus',
+                    'Obliterate': 'Cards that are obliterated are removed from the field, and they do not trigger last breath effects',
+                    'Overwhelm': 'When attacking, damage dealt over what should kill the blocker is dealt to the enemy Nexus',
+                    'Plunder': 'This is a special effect that requires Nexus damage to be dealt PRIOR to the card being played from hand.',
+                    'Quick Attack': 'Units will strike before the unit that is blocking them',
+                    'Regeneration': 'Unit will heal to full HP (including permanent buffs) at the start of each round',
+                    'Scout': 'For the first attack each round, if only scout units attack, Rally',
+                    'Silence': 'A silenced unit has all card text, keywords, and all buffs/nerfs, removed',
+                    'Skill': 'A skill is a spell like card that can be committed by a unit',
+                    'Support': 'Gives an effect to the unit on the right of this card while attacking',
+                    'Toss': 'Obliterate non-champion cards from the bottom of your deck',
+                    'Tough': 'Takes 1 less damage from all sources',
+                    'Vulnerable': 'Can be challenged by any enemy unit on the board, including ones without challenger.',
+                    }
+
+
 # @client.event
 @bot.event
 async def on_ready():
@@ -54,6 +81,46 @@ async def twisted_fate(ctx):
     response = random.choice(twisted_fate_quotes)
     await ctx.send(response)
     
+@bot.command(name='keyword', help='Responds with a information about a specific keyword. Usage -keyword *keyword*')
+async def keyword(ctx, keyword: str):
+
+    keyword = keyword_formatter(keyword)
+
+    embed = discord.Embed(
+        title=keyword,
+        description=keyword_dict[keyword],
+        colour = discord.Colour.red()
+    )
+
+    file = discord.File("./keyword_images/Keyword_" +keyword+ ".png", filename="image.png")
+    embed.set_thumbnail(url="attachment://image.png")
+    # embed.set_image(url="attachment://image.png")
+    await ctx.send(file=file, embed=embed)
+    
+def keyword_formatter(keyword: str) -> str:
+    first_let = keyword[0].upper()
+    rest = keyword[1:].lower()
+
+    return first_let+rest
+
+@bot.command(name='keywords', help='Responds with an embed of all the keywords and what they mean')
+async def keywords(ctx):
+
+    # This will just be a hard coded embed with the images of the keywords and the definitions
+
+    key_embed = discord.Embed(
+        title="Keywords",
+        description="Here's a list of all the keywords and what they mean",
+        colour =discord.Colour.red()
+    )
+
+    key_embed.add_field(name="Images", value="To see the image of what the keyword looks like, do -image **insert keyword here**", inline=False)
+
+    for key in keyword_dict.keys():
+        key_embed.add_field(name=key, value=keyword_dict[key], inline=False)
+
+    await ctx.send(embed=key_embed)
+
 @bot.command(name='deckcode', help='Will take a deckcode and return display it')
 async def deckcode(ctx, code: str):
 
@@ -110,11 +177,11 @@ async def deckcode(ctx, code: str):
         card_code = card.cardCode
         if card.cardCode[2:4] in region_1: 
             region1_cards += "**" + region1_dict[card_code] + "** " + card.name + "\n" #+ " **Cost: " + str(card.cost) + "**\n"           
-            region1_costs += "**Cost: " + str(card.cost) + "**\n"
+            region1_costs += "**" + str(card.cost) + "**\n"
 
         elif card.cardCode[2:4] in region_2: 
             region2_cards += "**" + region2_dict[card_code] + "** " + card.name + "\n" #" **Cost: " + str(card.cost) + "**\n"
-            region2_costs += "**Cost: " + str(card.cost) + "**\n"
+            region2_costs += "**" + str(card.cost) + "**\n"
 
     champs = (Deck.decode(code)).champions()
     champions = ""
@@ -132,6 +199,11 @@ async def deckcode(ctx, code: str):
     embed_deck.add_field(name='Cost:', value=region2_costs, inline=True)
 
     await ctx.send(embed=embed_deck)
+
+@deckcode.error
+async def deckcode_error(ctx, error):
+    if isinstance(error, commands.BadArgument):
+        await ctx.send('There has been an error processing the command')
 
 """
 Takes a list in the format ['Int 1-3:Code', ..., ...] and puts it into a dictionary
