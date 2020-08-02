@@ -76,7 +76,13 @@ async def twisted_fate(ctx):
     twisted_fate_quotes = ['Never lost a fair game...or played one.',
                         'I\'m always up for a round or two.',
                         'Only fools play the hand they\'re dealt.',
-                        'All or nothin\'']
+                        'All or nothin\'',
+                        'Deal me in.',
+                        'Somethin\' for everyone.',
+                        'Lady Luck is smiling.',
+                        'Charmed, I\'m sure.',
+                        'Gotta trust your instincts.',
+                        ]
 
     response = random.choice(twisted_fate_quotes)
     await ctx.send(response)
@@ -183,6 +189,11 @@ async def deckcode(ctx, code: str):
             region2_cards += "**" + region2_dict[card_code] + "** " + card.name + "\n" #" **Cost: " + str(card.cost) + "**\n"
             region2_costs += "**" + str(card.cost) + "**\n"
 
+    # (sort_by_cost(region2_cards, region2_costs))
+    # region1_costs = (sort_by_cost(region1_cards, region1_costs))[1]
+
+    # print(region1_cards)    
+
     champs = (Deck.decode(code)).champions()
     champions = ""
     for champ in champs:
@@ -204,6 +215,44 @@ async def deckcode(ctx, code: str):
 async def deckcode_error(ctx, error):
     if isinstance(error, commands.BadArgument):
         await ctx.send('There has been an error processing the command')
+
+"""
+Takes two strings, a card string and a cost string and splits them up and then sorts them according to cost
+"""
+def sort_by_cost(cards: str, costs: str) -> list:
+
+    lst = []
+
+    card_str = ""
+    cost_str = ""
+
+    cards = cards.split('\n')
+    costs = costs.split('\n')
+
+    for i in range(len(costs)):
+        costs[i] = costs[i].strip("*")
+
+    print(cards, costs)
+
+    lowest = 0
+    while cards.count != 0 and costs.count != 0:
+
+        for index in range(len(cards)):
+
+            if cost[i] == lowest:
+                cards_str += cards[i] + "\n"
+                costs_str += costs[i] + "\n"
+                cards.pop(i)
+                costs.pop(i)
+
+            if cost[i] > lowest:
+                
+                lowest = int (cost[i])
+                cards_str += cards[i] + "\n"
+                costs_str += costs[i] + "\n"
+                cards.pop(i)
+                costs.pop(i)
+
 
 """
 Takes a list in the format ['Int 1-3:Code', ..., ...] and puts it into a dictionary
