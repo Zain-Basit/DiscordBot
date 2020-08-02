@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from discord.ext import commands
 from lor_deckcodes import LoRDeck, CardCodeAndCount
 from twisted_fate import Deck
+import copy
 
 load_dotenv() # This library loads env vars from .env files into the shell
 
@@ -173,11 +174,6 @@ async def deckcode(ctx, code: str):
     region_1.insert(0, r1) # Readding the region name to the start of the list
     region_2.insert(0, r2)
 
-    region1_cards = ""
-    region2_cards = ""
-    region1_costs = ""
-    region2_costs = ""
-
     region1_tuples = []
     region2_tuples = []
 
@@ -194,16 +190,8 @@ async def deckcode(ctx, code: str):
             region2_costs = "" + str(card.cost) + ""
             region2_tuples.append((region2_cards, region2_costs))
 
-    # (sort_by_cost(region2_cards, region2_costs))
-    # region1_costs = (sort_by_cost(region1_cards, region1_costs))[1]
-
     set_1 = card_builder(sort_by_cost(region1_tuples))
     set_2 = card_builder(sort_by_cost(region2_tuples))
-
-    print(set_1[0])
-    print(set_1[1])
-    print(set_2[0])
-    print(set_2[1])
 
     # Now the cards have been sorted by cost, I need to build the strings, so the builder method will do that
 
