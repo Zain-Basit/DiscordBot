@@ -164,13 +164,13 @@ async def deckcode(ctx, code: str):
 
     # Converting the region lists into region dictionaries
 
-    r1 = region_1.pop(0)
+    r1 = region_1.pop(0) # Removing the region name from the start of the list
     r2 = region_2.pop(0)
 
     region1_dict = convert_dict(region_1)
     region2_dict = convert_dict(region_2)
     
-    region_1.insert(0, r1)
+    region_1.insert(0, r1) # Readding the region name to the start of the list
     region_2.insert(0, r2)
 
     region1_cards = ""
@@ -178,21 +178,34 @@ async def deckcode(ctx, code: str):
     region1_costs = ""
     region2_costs = ""
 
+    region1_tuples = []
+    region2_tuples = []
+
     for card in deck:
         
         card_code = card.cardCode
         if card.cardCode[2:4] in region_1: 
-            region1_cards += "**" + region1_dict[card_code] + "** " + card.name + "\n" #+ " **Cost: " + str(card.cost) + "**\n"           
-            region1_costs += "**" + str(card.cost) + "**\n"
+            region1_cards = "**" + region1_dict[card_code] + "** " + card.name #+ " **Cost: " + str(card.cost) + "**\n"           
+            region1_costs = "" + str(card.cost) + ""
+            region1_tuples.append((region1_cards, region1_costs))
 
         elif card.cardCode[2:4] in region_2: 
-            region2_cards += "**" + region2_dict[card_code] + "** " + card.name + "\n" #" **Cost: " + str(card.cost) + "**\n"
-            region2_costs += "**" + str(card.cost) + "**\n"
+            region2_cards = "**" + region2_dict[card_code] + "** " + card.name #" **Cost: " + str(card.cost) + "**\n"
+            region2_costs = "" + str(card.cost) + ""
+            region2_tuples.append((region2_cards, region2_costs))
 
     # (sort_by_cost(region2_cards, region2_costs))
     # region1_costs = (sort_by_cost(region1_cards, region1_costs))[1]
 
-    # print(region1_cards)    
+    set_1 = card_builder(sort_by_cost(region1_tuples))
+    set_2 = card_builder(sort_by_cost(region2_tuples))
+
+    print(set_1[0])
+    print(set_1[1])
+    print(set_2[0])
+    print(set_2[1])
+
+    # Now the cards have been sorted by cost, I need to build the strings, so the builder method will do that
 
     champs = (Deck.decode(code)).champions()
     champions = ""
@@ -203,11 +216,11 @@ async def deckcode(ctx, code: str):
         champions = "There are no champions in the deck"
 
     embed_deck.add_field(name='Champions', value=champions, inline=False)
-    embed_deck.add_field(name=f'{what_region(region_1[0])} Cards:', value=region1_cards, inline=True)
-    embed_deck.add_field(name='Cost:', value=region1_costs, inline=True)
+    embed_deck.add_field(name=f'{what_region(region_1[0])} Cards:', value=set_1[0], inline=True)
+    embed_deck.add_field(name='Cost:', value=set_1[1], inline=True)
     embed_deck.add_field(name='- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', value='\u200b', inline=False)
-    embed_deck.add_field(name=f'{what_region(region_2[0])} Cards:', value=region2_cards, inline=True)
-    embed_deck.add_field(name='Cost:', value=region2_costs, inline=True)
+    embed_deck.add_field(name=f'{what_region(region_2[0])} Cards:', value=set_2[0], inline=True)
+    embed_deck.add_field(name='Cost:', value=set_2[1], inline=True)
 
     await ctx.send(embed=embed_deck)
 
@@ -217,42 +230,52 @@ async def deckcode_error(ctx, error):
         await ctx.send('There has been an error processing the command')
 
 """
+Takes a list of cards/costs and returns a formatted strings for printing to an embed 
+"""
+def card_builder(pairs: list) -> tuple:
+
+    cards = ""
+    costs = ""
+    for pair in pairs:
+        cards += pair[0] + "\n"
+        costs += "**" + pair[1] + "**\n"
+    
+    return (cards, costs)
+
+"""
 Takes two strings, a card string and a cost string and splits them up and then sorts them according to cost
 """
-def sort_by_cost(cards: str, costs: str) -> list:
+def sort_by_cost(pairs: list) -> list:
 
-    lst = []
+    sorted_list = []
 
-    card_str = ""
-    cost_str = ""
+    # The input list is filled with tuples, and the tuples are are filled with pairs of strings, one is card name and amount, the other is costs.
+    # Ex: [  ("2 Jagged Butcher", "4"), ("3 Teemo", "1")]
 
-    cards = cards.split('\n')
-    costs = costs.split('\n')
+    a = copy.deepcopy(pairs)
 
-    for i in range(len(costs)):
-        costs[i] = costs[i].strip("*")
+    while len(a) != 0:
 
-    print(cards, costs)
+        lowest = 100 # The Lowest Cost
+        count = 0
+        
+        for index in range(len(a)):
+            if lowest > int(a[index][1]):
+                lowest = int(a[index][1])
+                count = index
 
-    lowest = 0
-    while cards.count != 0 and costs.count != 0:
+        for index in range(len(a)):    
+            
+            if lowest == int(a[index][1]):
+                continue
+            elif lowest > int(a[index][1]):
+                lowest = int(a[index][1])
+                count = index
+        
+        sorted_list.append(a[count])
+        a.pop(count)
 
-        for index in range(len(cards)):
-
-            if cost[i] == lowest:
-                cards_str += cards[i] + "\n"
-                costs_str += costs[i] + "\n"
-                cards.pop(i)
-                costs.pop(i)
-
-            if cost[i] > lowest:
-                
-                lowest = int (cost[i])
-                cards_str += cards[i] + "\n"
-                costs_str += costs[i] + "\n"
-                cards.pop(i)
-                costs.pop(i)
-
+    return sorted_list
 
 """
 Takes a list in the format ['Int 1-3:Code', ..., ...] and puts it into a dictionary
