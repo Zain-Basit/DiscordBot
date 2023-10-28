@@ -1,5 +1,5 @@
 # DiscordBot
-A repo for a discord bot I'm working on
+A repo for a discord bot I'm working on Legends of Runeterra, an online card game created by Riot Games.
 
 ## How it works
 
